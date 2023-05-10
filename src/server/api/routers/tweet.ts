@@ -35,20 +35,22 @@ export const tweetRouter = createTRPCRouter({
       const nextItem = tweets.pop()
 
       if (nextItem != null) {
-        nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt}
+        nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt }
       }
     }
 
-    return { tweets: tweets.map((tweet) => {
-      return {
-        id: tweet.id,
-        content: tweet.content,
-        createdAT: tweet.createdAt,
-        likeCount: tweet._count.likes,
-        user: tweet.user,
-        likedByMe: tweet.likes?.length > 0,
-      };
-    }), nextCursor }
+    return {
+      tweets: tweets.map((tweet) => {
+        return {
+          id: tweet.id,
+          content: tweet.content,
+          createdAT: tweet.createdAt,
+          likeCount: tweet._count.likes,
+          user: tweet.user,
+          likedByMe: tweet.likes?.length > 0,
+        };
+      }), nextCursor
+    }
 
   }),
   create: protectedProcedure
@@ -56,5 +58,20 @@ export const tweetRouter = createTRPCRouter({
     .mutation(async ({ input: { content }, ctx }) => {
       return await ctx.prisma.tweet.create({ data: { content, userId: ctx.session.user.id } });
     }),
+
+  toggleLike: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ input: { id }, ctx }) => {
+    const data = { tweetId: id, userId: ctx.session.user.id }
+    const existingLike = await ctx.prisma.like.findUnique({
+      where: { userId_tweetId: data }
+    });
+
+    if (existingLike == null) {
+      await ctx.prisma.like.create({ data });
+      return { addedLike: true }
+    } else {
+      await ctx.prisma.like.delete({ where: { userId_tweetId: data } });
+      return { addedLike: false}
+    }
+  }),
 
 });

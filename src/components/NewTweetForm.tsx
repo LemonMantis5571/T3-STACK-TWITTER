@@ -27,6 +27,7 @@ function Form() {
   const createTweet = api.tweet.create.useMutation({
     onSuccess: newTweet => {
       setinputValue("");
+      console.log(newTweet);
     }
   });
 

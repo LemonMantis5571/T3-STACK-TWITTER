@@ -10,15 +10,19 @@ const Home: NextPage = () => {
         <h1 className="mb-2 px-4 text-lg font-bold"> Home</h1>
       </header>
       <NewTweetForm />
-      <RecentTweets /> 
+      <RecentTweets />
     </>
   );
 };
 
 function RecentTweets() {
-  const tweets = api.tweet.infiniteFeed.useInfiniteQuery({}, {getNextPageParam: (lastPage) => lastPage.nextCursor})
+  const tweets = api.tweet.infiniteFeed.useInfiniteQuery({}, { getNextPageParam: (lastPage) => lastPage.nextCursor })
 
-  return <InfiniteTweetList tweets={tweets.data?.pages.flatMap(page => page.tweets)} isError={tweets.isError} /> 
+  return <InfiniteTweetList tweets={tweets.data?.pages.flatMap(page => page.tweets)}
+    IsError={tweets.isError}
+    isLoading={tweets.isLoading}
+    hasmore={tweets.hasNextPage}
+    fetchNewTweets={tweets.fetchNextPage} />
 }
 
 export default Home;
